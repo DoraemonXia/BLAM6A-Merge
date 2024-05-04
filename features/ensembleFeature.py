@@ -90,19 +90,19 @@ def PSNP(trainPos,trainNeg,testPos,testNeg,k=1):
     test_lp = len(test_positive[0])
     test_ln = len(test_negative[0])
     
-    nucleotides = ['A', 'C', 'G', 'T']    #定义四种核苷酸
+    nucleotides = ['A', 'C', 'G', 'T'] 
     
     if k == 1 :
-        nuc = [n1 for n1 in nucleotides]  #四种核苷酸列表
+        nuc = [n1 for n1 in nucleotides]
         order = {}
         for i in range(len(nuc)):
-            order[nuc[i]] = i  #每种核苷酸定义一个序号
-        matrix_po = CalculateMatrix(train_positive, order, 1)  #给定字典，训练集的阳性序列，计算矩阵，参数的k值为1
+            order[nuc[i]] = i 
+        matrix_po = CalculateMatrix(train_positive, order, 1) 
         matrix_ne = CalculateMatrix(train_negative, order, 1)
 
-        F1 = matrix_po/train_p_num    #计算完之后，再除以阳性数量，得到相当于频率的东西
+        F1 = matrix_po/train_p_num 
         F2 = matrix_ne/train_n_num       
-        F = F1 - F2    #用阳性-阴性，得到阳性阴性在对应位置的对应碱基的频率差
+        F = F1 - F2  
 
         testPosCode = []
         for sequence in test_positive:  
@@ -110,7 +110,7 @@ def PSNP(trainPos,trainNeg,testPos,testNeg,k=1):
                 po_number = F[j][order[sequence[j:j+1]]]
                 testPosCode.append(po_number)  
         testPosCode = np.array(testPosCode)
-        testPosCode = testPosCode.reshape((test_p_num,test_lp))  #得到测试集对训练集取到的频率差，阳性的
+        testPosCode = testPosCode.reshape((test_p_num,test_lp)) 
         
         testNegCode = []    
         for sequence in test_negative:    
@@ -118,7 +118,7 @@ def PSNP(trainPos,trainNeg,testPos,testNeg,k=1):
                 ne_number = F[i][order[sequence[i:i+1]]]
                 testNegCode.append(ne_number)  
         testNegCode = np.array(testNegCode)
-        testNegCode = testNegCode.reshape((test_n_num,test_ln))  #得到测试集，对训练集取到的频率差，阴性的
+        testNegCode = testNegCode.reshape((test_n_num,test_ln))  
         
         trainPosCode = []    
         for sequence in train_positive:    
@@ -126,7 +126,7 @@ def PSNP(trainPos,trainNeg,testPos,testNeg,k=1):
                 po_number = F[i][order[sequence[i:i+1]]]
                 trainPosCode.append(po_number)  
         trainPosCode = np.array(trainPosCode)
-        trainPosCode = trainPosCode.reshape((train_p_num,test_ln))  #得到测试集，对训练集取到的频率差，阴性的
+        trainPosCode = trainPosCode.reshape((train_p_num,test_ln)) 
         
         trainNegCode = []    
         for sequence in train_negative:    
@@ -134,11 +134,11 @@ def PSNP(trainPos,trainNeg,testPos,testNeg,k=1):
                 ne_number = F[i][order[sequence[i:i+1]]]
                 trainNegCode.append(ne_number)  
         trainNegCode = np.array(trainNegCode)
-        trainNegCode = trainNegCode.reshape((train_n_num,test_ln))  #得到测试集，对训练集取到的频率差，阴性的
+        trainNegCode = trainNegCode.reshape((train_n_num,test_ln))
         
     return trainPosCode,trainNegCode,testPosCode,testNegCode
 
-#二进制单热编码 返回的shape为batch_Size*input_length*4
+#batch_Size*input_length*4
 def Binary(sequences):
     AA = 'ACGT'
     binary_feature = []
@@ -155,7 +155,7 @@ def Binary(sequences):
         binary_feature.append(binary)
     return np.array(binary_feature)
 
-#word2vec编码
+#word2vec
 def emb_seqs(sequences, features=100, num = 4):
     w2v_model = word2vec.Word2Vec.load("features/dna_w2v_100.pt")
     seqs_emb = []
@@ -168,9 +168,9 @@ def emb_seqs(sequences, features=100, num = 4):
                 seq_emb.append(np.array(np.zeros([features])))
         seqs_emb.append(seq_emb)
     seqs_emb = np.array(seqs_emb).reshape(len(seqs_emb),-1,features)
-    return seqs_emb #词向量编码
+    return seqs_emb #
 
-#ENAC编码；返回的shape为batch_size*(input_length-window+1)*4
+#batch_size*(input_length-window+1)*4
 def ENAC(sequences):
     AA = 'ACGT'
     enac_feature = []
@@ -188,8 +188,8 @@ def ENAC(sequences):
                 for aa in AA:
                     enac_one.append(count[aa])
                     #enac+=count[aa]
-                enac.append(enac_one)  #返回二维的向量
-                #enac += enac_one  #返回一维的向量
+                enac.append(enac_one)  #
+                #enac += enac_one  #
         enac_feature.append(enac)
     return np.array(enac_feature)
 
@@ -205,40 +205,40 @@ def PseDNC(sequences):
         DNC_key[21]='NA'
     
     DNC_value=phisical_chemical_proporties.values[:,1:]
-    DNC_value=np.array(DNC_value).T  #转置后，行代表性质
+    DNC_value=np.array(DNC_value).T  #
     DNC_value_scale=[[]]*len(DNC_value)  
     for i in range(len(DNC_value)):
-        average_=sum(DNC_value[i]*1.0/len(DNC_value[i]))  #求和再除长度，得到均值
-        std_=np.std(DNC_value[i],ddof=1)  #计算方差
-        DNC_value_scale[i]=[round((e-average_)/std_,2) for e in DNC_value[i]]  #重新计算得到结果，差值/方差
-    DNC_value_scale=list(zip(*DNC_value_scale))  #DNC_value_scale变成列表
+        average_=sum(DNC_value[i]*1.0/len(DNC_value[i]))  #
+        std_=np.std(DNC_value[i],ddof=1)  #
+        DNC_value_scale[i]=[round((e-average_)/std_,2) for e in DNC_value[i]]  #
+    DNC_value_scale=list(zip(*DNC_value_scale))  #
 
-    DNC_len=len(DNC_value_scale)  #得到长度
+    DNC_len=len(DNC_value_scale)  #
     
     w=0.9
-    Lamda=6  #定义w和Lamda，原论文中是否给出
+    Lamda=6  #
     result_value=[]
-    m6a_len=len(sequences[0])  #获取单个序列的长度
+    m6a_len=len(sequences[0])  #
     
-    m6a_num=len(sequences)  #获取序列的数量
-    for m6a_line_index in range(m6a_num):  #循环取列
-        frequency=[0]*len(DNC_key)  #定义二核苷酸的频率
+    m6a_num=len(sequences)  #
+    for m6a_line_index in range(m6a_num):  #
+        frequency=[0]*len(DNC_key)  #
         #print len(frequency)
-        m6a_DNC_value=[[]]*(m6a_len-1)  #定义好单个序列的空列表
+        m6a_DNC_value=[[]]*(m6a_len-1)  #
         #print m6a_DNC_value
         for m6a_line_doublechar_index in range(m6a_len):
             for DNC_index in range(len(DNC_key)):
                 if sequences[m6a_line_index][m6a_line_doublechar_index:m6a_line_doublechar_index+2]==DNC_key[DNC_index]:
                     #print m6aseq[2][0:2]
-                    m6a_DNC_value[m6a_line_doublechar_index]=DNC_value_scale[DNC_index]  #赋值
-                    frequency[DNC_index]+=1  #对应频率+1
+                    m6a_DNC_value[m6a_line_doublechar_index]=DNC_value_scale[DNC_index]  #
+                    frequency[DNC_index]+=1  #
         #print m6a_DNC_value
 
-        frequency=[e/float(sum(frequency)) for e in frequency]  #归一化
-        p=sum((frequency))  #得到频率和
+        frequency=[e/float(sum(frequency)) for e in frequency]  #
+        p=sum((frequency))  #
         
         one_line_value_with = 0.0
-        sita = [0] * Lamda  #6个0
+        sita = [0] * Lamda  #
         for lambda_index in range(1, Lamda + 1):
             one_line_value_without_ = 0.0
             for m6a_sequence_value_index in range(1, m6a_len - lambda_index):

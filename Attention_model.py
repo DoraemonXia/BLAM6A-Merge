@@ -6,6 +6,7 @@ import re
 from sklearn.utils import shuffle
 from utils import metricsCal
 from torch.utils.data import DataLoader,TensorDataset
+from sklearn.svm import SVC
 import math
 import sys
 import copy
@@ -15,14 +16,16 @@ from sklearn.model_selection import KFold
 import torch.nn.functional as F
 import os
 
+#this is attention module.
 def attention(query, key, value, mask=None, dropout=None):  # q,k,v: [batch, h, seq_len, d_k]
-    d_k = query.size(-1)  # query的维度
-    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)  # 打分机制 [batch, h, seq_len, seq_len]
-    p_atten = F.softmax(scores, dim=-1)  # 对最后一个维度归一化得分, [batch, h, seq_len, seq_len]
+    d_k = query.size(-1)  # dim of query
+    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)  #[batch, h, seq_len, seq_len]
+    p_atten = F.softmax(scores, dim=-1)  #[batch, h, seq_len, seq_len]
     if dropout is not None:
         p_atten = dropout(p_atten)
-    return torch.matmul(p_atten, value), p_atten  # [batch, h, seq_len, d_k] 作矩阵的乘法
+    return torch.matmul(p_atten, value), p_atten
 
+#this is position encoding scheme.
 class PositionalEncoding(nn.Module):
 
     def __init__(self, dim1, dim2, dropout=0.1, max_len=5000):
@@ -33,11 +36,9 @@ class PositionalEncoding(nn.Module):
         #                     "odd dim (got dim={:d})".format(dim))
 
         """
-        构建位置编码pe
-        pe公式为：
         PE(pos,2i/2i+1) = sin/cos(pos/10000^{2i/d_{model}})
         """
-        pe = torch.zeros(max_len, dim2)  # max_len 是解码器生成句子的最长的长度，假设是 10
+        pe = torch.zeros(max_len, dim2)  #
         position = torch.arange(0, max_len).unsqueeze(1)
         div_term0 = torch.exp((torch.arange(0, dim2, 2, dtype=torch.float) * -(math.log(10000.0) / dim2)))
         div_term1 = torch.exp((torch.arange(1, dim2, 2, dtype=torch.float) * -(math.log(10000.0) / dim2)))
@@ -59,43 +60,39 @@ class PositionalEncoding(nn.Module):
         #emb = self.drop_out(emb)
         emb = self.bm1(emb.to(torch.float32))
         return emb
-    
-def clones(module, N):  #定义clones方法
-    return nn.ModuleList([copy.deepcopy(module)
-                          for _ in range(N)])  #让原来变量不影响,且克隆module N次
 
-class SelfAttention(nn.Module):  #多头注意力机制
+def clones(module, N):
+    return nn.ModuleList([copy.deepcopy(module)
+                          for _ in range(N)])
+
+#this is self-attention module.
+class SelfAttention(nn.Module):
 
     def __init__(self,embedding_dim, dropout=0.1):
         super(SelfAttention, self).__init__()
-        self.linears = clones(nn.Linear(embedding_dim, embedding_dim), 4)  #克隆四份Linear网络层
-        self.dropout = nn.Dropout(p=dropout)  #定义Dropout层
+        self.linears = clones(nn.Linear(embedding_dim, embedding_dim), 4)
+        self.dropout = nn.Dropout(p=dropout)
 
     def forward(self,query,key,value,mask=None):  # q,k,v: [batch, seq_len, embedding_dim]
-        nbatches = query.shape[0]  #批数量
+        nbatches = query.shape[0]
         query, key, value = [
             l(x) for l, x in zip(self.linears,
                             (query.to(torch.float32),
                              key.to(torch.float32),
                              value.to(torch.float32) ) )
-        ]  #获取zip的query,key,value权重矩阵
+        ]
         attn, p_atten = attention(query,key,value,mask=mask,dropout=self.dropout)
-        out = self.linears[-1](attn)  #得到最后一层线性层的输出
-        return out,p_atten  #返回out结果
-
-class MultiSelfAttention(nn.Module):  #多头注意力机制
+        out = self.linears[-1](attn)
+        return out,p_atten
+# This is MultiSelf-Attention Module.
+class MultiSelfAttention(nn.Module):
 
     def __init__(self, h,embedding_dim ,dropout=0.1):
         super(MultiSelfAttention, self).__init__()
         self.h = h
-        self.attn_modules = clones(SelfAttention(embedding_dim), h)  #克隆h份Linear网络层 
+        self.attn_modules = clones(SelfAttention(embedding_dim), h)
 
     def forward(self,query,key,value,mask=None):  # q,k,v: [batch, seq_len, embedding_dim]
-#         out = torch.tensor([])
-#         attn = torch.tensor([])
-        
-#         out = torch.tensor(np.zeros(query.shape[0]*query.shape[1]*query.shape[2]).reshape(query.shape[0]                                             ,query.shape[1],query.shape[2])) 
-#         attn = torch.tensor(np.zeros(query.shape[0]*query.shape[1]*query.shape[1]).reshape(query.shape[0]                                             ,query.shape[1],query.shape[1]))                   
         for i in range(self.h):
             
             if i != 0:
@@ -105,39 +102,36 @@ class MultiSelfAttention(nn.Module):  #多头注意力机制
             else:
                 out,attn = self.attn_modules[i](query,key,value)
 
-        return out,attn  #返回out结果 
-    
-class MultiHeadAttention(nn.Module):  #多头注意力机制
+        return out,attn
+
+class MultiHeadAttention(nn.Module):
 
     def __init__(self, h, embedding_dim, dropout=0.1):
         super(MultiHeadAttention, self).__init__()
-        #assert embedding_dim % h == 0  #断言，可以整除
-        self.d_k = embedding_dim // h  # 将 embedding_dim 分割成 h份 后的维度
-        self.h = h  # h 指的是 head数量
-        self.linears = clones(nn.Linear(embedding_dim, embedding_dim), 4)  #克隆四份Linear网络层      
-        self.dropout = nn.Dropout(p=dropout)  #定义Dropout层
+        #assert embedding_dim % h == 0 
+        self.d_k = embedding_dim // h  #
+        self.h = h  
+        self.linears = clones(nn.Linear(embedding_dim, embedding_dim), 4)  #    
+        self.dropout = nn.Dropout(p=dropout)  #
 
     def forward(self,query,key,value,mask=None):  # q,k,v: [batch, seq_len, embedding_dim]
         #if mask is not None:
         #    mask = mask.unsqueeze(1)  # [batch, seq_len, 1]
-        nbatches = query.shape[0]  #批数量
-        # 1. Do all the linear projections(线性预测) in batch from embeddding_dim => h x d_k
-        # [batch, seq_len, h, d_k] -> [batch, h, seq_len, d_k]
-#         print(query)
-#         print(value.TensorFloat)
+        nbatches = query.shape[0]  #
+
         query, key, value = [
-            l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)  #转换形式大小等
+            l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)  #
             for l, x in zip(self.linears,
                             (query.to(torch.float32),
                              key.to(torch.float32), 
                              value.to(torch.float32) ) )
-        ]  #获取zip的query,key,value权重矩阵
+        ]  #
         attn, p_atten = attention(query,key,value,mask=mask,dropout=self.dropout)
         # 3. "Concat" using a view and apply a final linear.
         # [batch, h, seq_len, d_k]->[batch, seq_len, embedding_dim]
-        attn = attn.transpose(1,2).contiguous().view(nbatches, -1,self.h * self.d_k)  #定义attn值
-        out = self.linears[-1](attn)  #得到最后一层线性层的输出
-        return out,attn  #返回out结果
+        attn = attn.transpose(1,2).contiguous().view(nbatches, -1,self.h * self.d_k)
+        out = self.linears[-1](attn)
+        return out,attn
     
 class BahdanauAttention(nn.Module):
     """
@@ -199,10 +193,6 @@ class ModelBS_Pro(nn.Module):
         super(ModelBS_Pro, self).__init__()
         self.BS1 = ModelBS(dim1,dim2) 
         self.BS2 = ModelBS(dim1,dim2)
-#         self.BS3 = ModelBS(dim1,dim2)
-#         self.BS4 = ModelBS(dim1,dim2)
-#         self.BS5 = ModelBS(dim1,dim2)
-#         self.BS6 = ModelBS(dim1,dim2)
         self.conv1 = nn.Conv1d(dim1,dim1,kernel_size=3,padding=1)
         self.fn1 = nn.Linear(dim1*dim2,128)
         self.fn2 = nn.Linear(128,1)
@@ -212,15 +202,8 @@ class ModelBS_Pro(nn.Module):
         self.bm1 = nn.BatchNorm1d(dim1)
 
     def forward(self, x):
-       # print(x.shape)
         x1,x2 = self.BS1(x)
-       # print(x1.shape)
         x1,x2 = self.BS2(x1)
-#         x1,attn = self.BS3(x1)
-#         x1,attn = self.BS4(x1)
-#         x1,attn = self.BS5(x1)
-#         x1,attn = self.BS6(x1)
-        #x1 = x1+x
         x1 = self.bm1(x1)
         x1 = self.conv1(x1)
         x1 = x1.contiguous().view(x1.shape[0],-1)
@@ -230,9 +213,7 @@ class ModelBS_Pro(nn.Module):
         x2 = x2.contiguous().view(x2.shape[0],-1)
         x2 = self.fn3(x2)
         x2 = self.fn4(x2)
-        
-        out = x1+x2
-        
+        out = x1+x2      
         out = self.ac(out)
         return out
 
@@ -438,7 +419,7 @@ def train(model,data,label,epoch,train_device,model_dir,batch_size):
     else:
         model_train = model
     criterion = nn.BCELoss()
-    optimizer = torch.optim.Adam(model_train.parameters(),lr=0.0001)  #改变学习率
+    optimizer = torch.optim.Adam(model_train.parameters(),lr=0.0001)
     #optimizer = torch.optim.Adam(model_train.parameters(),lr=learn_rate)
     #scheduler = StepLR(optimizer,step_size=10,gamma=0.5)
     dataX = torch.Tensor(data).clone().detach()
@@ -464,7 +445,7 @@ def train(model,data,label,epoch,train_device,model_dir,batch_size):
             print(running_loss)
     save_model(model_train,model_dir)
     model_train = torch.load(model_dir+'/model.pt')
-    #device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")  # 选择设备
+    #device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     th,_,_,_,_,_,_,_,_,_ = metricsCal.evaluate(model_train,train_loader,train_device)
     return running_loss,th
 
@@ -476,12 +457,12 @@ def test(data,label,best_auc,test_device,model_dir,batch_size,th):
     label = torch.Tensor(label).clone().detach()#.requires_grad_(True)torch.Tensor(label)
     test_data = TensorDataset(data,label)
     test_loader = DataLoader(test_data, shuffle=False, batch_size=batch_size)
-    #device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")  # 选择设备
+    #device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     _,_,_,_,Sen,Spe, Acc, mcc, AUC = metricsCal.evaluate(model_test,test_loader,test_device,False,th)
     
-    print('Accuracy on test set: %d %%' %Acc)
-    print('Sensitivity on test set: %d %%' %Sen)
-    print('Speciality on test set: %d %%' %Spe)
+    print('Accuracy on test set: %d' %Acc)
+    print('Sensitivity on test set: %d' %Sen)
+    print('Speciality on test set: %d' %Spe)
     print('MCC on test set: %.3f' %mcc)
     print('auc on test set: %.3f' %AUC)
     if(AUC > best_auc):
@@ -494,7 +475,7 @@ def independTest(data,label,test_device,model_dir,batch_size,th):
     label = torch.Tensor(label).clone().detach()#.requires_grad_(True)torch.Tensor(label)
     test_data = TensorDataset(data,label)
     test_loader = DataLoader(test_data, shuffle=False, batch_size=batch_size)
-    #device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")  # 选择设备
+    #device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     _,_,_,_,Sen,Spe, Acc, mcc, AUC = metricsCal.evaluate(model_test,test_loader,test_device,False,th)
     print(Acc,mcc,AUC)
     print('Accuracy on test set: %d %%' %Acc)
@@ -510,9 +491,22 @@ def independResult(data,label,test_device,model_dir,batch_size,th):
     label = torch.Tensor(label).clone().detach()#.requires_grad_(True)torch.Tensor(label)
     test_data = TensorDataset(data,label)
     test_loader = DataLoader(test_data, shuffle=False, batch_size=batch_size)
-    #device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")  # 选择设备
+    #device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     y_score,y_true = metricsCal.evaluate_result(model_test,test_loader,test_device,False,th)
     return y_score,y_true
+
+def analysis_results(pred,label,stack_data,stack_label,th=0.3,strategy="stack"):
+    if strategy == "soft":
+        clf = SVC(kernel = "rbf",gamma="auto", degree = 1,tol =1e-2, cache_size=7000)
+        clf.fit( stack_data, stack_label)
+        y_score = clf.predict_proba(pred)
+        th,_,_,_,_,_,_,_,_,_ = metricsCal.get_train_metrics( clf.predict_proba(stack_data),stack_label )
+        TN, FN, FP, TP, Sen, Spe, Acc, mcc, AUC = metricsCal.get_test_metrics(y_score,label,th)
+    elif strategy == "stack":
+        y_score = np.mean(pred,axis=1)
+        th,_,_,_,_,_,_,_,_,_ = metricsCal.get_train_metrics( y_score,label )
+        TN, FN, FP, TP, Sen, Spe, Acc, mcc, AUC = metricsCal.get_test_metrics(y_score,label,th)
+    return y_score,TN, FN, FP, TP, Sen, Spe, Acc, mcc, AUC
 
 def load_model(model_dir):
     if os.path.exists(model_dir+'model.pt'):
