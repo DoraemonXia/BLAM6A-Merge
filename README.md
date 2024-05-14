@@ -11,7 +11,7 @@ BLAM6A-Merge: Leveraging Attention Mechanisms and Feature Fusion Strategies to I
 ## Overview
 This repository contains the source code for paper "BLAM6A-Merge: Leveraging Attention Mechanisms and Feature Fusion Strategies to Improve the Identification of RNA N6-methyladenosine Sites". If you have questions, or you have problem using my tools on test other dataset， don't hesitate to open an issue or ask me via <121106022704@njust.edu.cn>. We are happy to hear from you!
 
-![](https://github.com/1290901435/BLAM6A-Merge/blob/main/imgs/Figure_1.jpg)
+![](https://github.com/1290901435/BLAM6A-Merge/imgs/Figure_1.jpg)
 
 <!-- ## News
 **Oct 10 2023**: The trained FABind model and processed dataset are released!
@@ -19,7 +19,9 @@ This repository contains the source code for paper "BLAM6A-Merge: Leveraging Att
 **Oct 11 2023**: Initial commits. More codes, pre-trained model, and data are coming soon. -->
 
 ## Setup Environment
-This is an example for how to set up a working conda environment to run the code. In this example, we have cuda version==12.1, and we install torch==2.0.1 To make sure the pyg packages are installed correctely, we directly install them from whl.
+This is an example for how to set up a working conda environment to run the code. In this example, we have cuda version==12.1, and we install torch==2.0.1. 
+
+To make sure the pyg packages are installed correctely, we directly install them from whl.
 
 ```shell
 conda create --name BLAM6A python=3.8

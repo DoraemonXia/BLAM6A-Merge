@@ -18,7 +18,7 @@ from torch.autograd import Variable
 from sklearn.model_selection import KFold
 import torch.nn.functional as F
 import os
-import Model
+import Attention_model as Model
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 import csv
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     #generate the data for training and validation.
         X_train_PCP_neg = trainNeg_PCP[train_index]
         X_test_PCP_neg = trainNeg_PCP[test_index]
-        trainPos_PCP = np.repeat(trainPos_PCP,10)
+        trainPos_PCP = np.repeat(trainPos_PCP,10,axis=0)
         X_train_PCP_pos = trainPos_PCP[:int(0.8*len(trainPos_PCP))]
         X_test_PCP_pos = trainPos_PCP[int(0.8*len(trainPos_PCP)):]
         Y_train_PCP = np.append(np.ones(len(X_train_PCP_pos)),np.zeros(len(X_train_PCP_neg)),axis = 0)
@@ -159,7 +159,7 @@ if __name__ == '__main__':
 
         X_train_emb_neg = trainNeg_emb[train_index]
         X_test_emb_neg = trainNeg_emb[test_index]
-        trainPos_emb = np.repeat(trainPos_emb,10)
+        trainPos_emb = np.repeat(trainPos_emb,10,axis=0)
         X_train_emb_pos = trainPos_emb[:int(0.8*len(trainPos_emb))]
         X_test_emb_pos = trainPos_emb[int(0.8*len(trainPos_emb)):]
         Y_train_emb = np.append(np.ones(len(X_train_emb_pos)),np.zeros(len(X_train_emb_neg)),axis = 0)
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
         X_train_DBPF_neg = trainNeg_DBPF[train_index]
         X_test_DBPF_neg = trainNeg_DBPF[test_index]
-        trainPos_DBPF = np.repeat(trainPos_DBPF,10)
+        trainPos_DBPF = np.repeat(trainPos_DBPF,10,axis=0)
         X_train_DBPF_pos = trainPos_DBPF[:int(0.8*len(trainPos_DBPF))]
         X_test_DBPF_pos = trainPos_DBPF[int(0.8*len(trainPos_DBPF)):]
         Y_train_DBPF = np.append(np.ones(len(X_train_DBPF_pos)),np.zeros(len(X_train_DBPF_neg)),axis = 0)
@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
         X_train_PSNP_neg = trainNeg_PSNP[train_index]
         X_test_PSNP_neg = trainNeg_PSNP[test_index]
-        trainPos_PSNP = np.repeat(trainPos_PSNP,10)
+        trainPos_PSNP = np.repeat(trainPos_PSNP,10,axis=0)
         X_train_PSNP_pos = trainPos_PSNP[:int(0.8*len(trainPos_PSNP))]
         X_test_PSNP_pos = trainPos_PSNP[int(0.8*len(trainPos_PSNP)):]
         Y_train_PSNP = np.append(np.ones(len(X_train_PSNP_pos)),np.zeros(len(X_train_PSNP_neg)),axis = 0)
@@ -196,7 +196,7 @@ if __name__ == '__main__':
         #train the model for emb feature
         best_auc = 0
         patience = 0
-        model_dir = "Model/"+type_name[typei]+"_"+cell_name[celli]+"/emb/KFold_" + str(i) + "/"
+        model_dir = "Model/"+type_name+"_"+cell_name+"/emb/KFold_" + str(i) + "/"
         
         model = Model.ModelB_MultiSelf_Pro(X_train_emb.shape[1],X_test_emb.shape[2])
         
@@ -218,7 +218,7 @@ if __name__ == '__main__':
         #train the model for PCP feature
         best_auc = 0
         patience = 0
-        model_dir = "Model/"+type_name[typei]+"_"+cell_name[celli]+"/PCP/KFold_" + str(i) + "/"
+        model_dir = "Model/"+type_name+"_"+cell_name+"/PCP/KFold_" + str(i) + "/"
         
         model = Model.ModelBS_Pro(X_train_PCP.shape[1],X_test_PCP.shape[2])
         
@@ -233,13 +233,13 @@ if __name__ == '__main__':
                 patience+=1
             if patience==max_patience:
                 break
-        y_pred_PCP, y_true = Model.independResult( X_test_emb,Y_test_emb,device,model_dir,batch_size,th )
+        y_pred_PCP, y_true = Model.independResult( X_test_DBPF,Y_test_PCP,device,model_dir,batch_size,th )
         print("The model for PCP feature had trained over!")
 
         #train the model for PSNP feature
         best_auc = 0
         patience = 0
-        model_dir = "Model/"+type_name[typei]+"_"+cell_name[celli]+"/PSNP/KFold_" + str(i) + "/"
+        model_dir = "Model/"+type_name+"_"+cell_name+"/PSNP/KFold_" + str(i) + "/"
         
         model = Model.ModelB_MultiSelf_Pro(X_train_PSNP.shape[1],X_test_PSNP.shape[2])
         
@@ -255,13 +255,13 @@ if __name__ == '__main__':
                 patience+=1
             if patience==max_patience:
                 break
-        y_pred_PSNP, y_true = Model.independResult( X_test_emb,Y_test_emb,device,model_dir,batch_size,th )
+        y_pred_PSNP, y_true = Model.independResult( X_test_PSNP,Y_test_PSNP,device,model_dir,batch_size,th )
         print("The model for PSNP feature had trained over!")
 
         #train the model for DBPF feature
         best_auc = 0
         patience = 0
-        model_dir = "Model/"+type_name[typei]+"_"+cell_name[celli]+"/DBPF/KFold_" + str(i) + "/"
+        model_dir = "Model/"+type_name+"_"+cell_name+"/DBPF/KFold_" + str(i) + "/"
         
         model = Model.ModelB_Bah_Pro(X_train_DBPF.shape[1],X_test_DBPF.shape[2])
         
@@ -277,7 +277,7 @@ if __name__ == '__main__':
                 patience+=1
             if patience==max_patience:
                 break
-        y_pred_DBPF, y_true = Model.independResult( X_test_emb,Y_test_emb,device,model_dir,batch_size,th )
+        y_pred_DBPF, y_true = Model.independResult( X_test_DBPF,Y_test_DBPF,device,model_dir,batch_size,th )
         print("The model for DBPF feature had trained over!")
 
         Output_path = 'Result/'+type_name+'_'+cell_name+'/'
@@ -289,14 +289,14 @@ if __name__ == '__main__':
         valid_label = np.append( np.ones( len(trainPos_Seq)),np.zeros(len(testPos_Seq) ),axis=0)
         Blastn_seq,valid_label = shuffle( Blastn_seq,valid_label,random_state=42 )
         df = pd.DataFrame( np.vstack((Blastn_seq,valid_label)).T)
-        df.to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/blastn_valid_seq.csv',columns = ["seq","label"], header=True,index=False)
+        df.to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/blastn_valid_seq.csv',header = ["seq","label"],index=False)
 
         #this will generate the seq for blastn test.
         Blastn_test_seq = np.append(testPos_seq,testNeg_seq,axis=0)
         testLabel = np.append(np.ones(len(testPos_PSNP)),np.zeros(len(testNeg_PSNP)),axis = 0)
         df = pd.DataFrame( np.vstack((Blastn_test_seq,testLabel)).T)
-        df.to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/blastn_test_seq.csv',columns = ["seq","label"], header=True,index=False)
+        df.to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/blastn_test_seq.csv',header = ["seq","label"],index=False)
 
         #this is the validation result of different encoding schemes in corresponding KFold.
         df = pd.DataFrame( np.vstack((y_true,y_pred_emb,y_pred_PCP,y_pred_PSNP,y_pred_DBPF)).T)
-        df.to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/valid_results.csv',columns = ["label","w2v","PCP","PSNP","DBPF"], header=True,index=False)
+        df.to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/valid_results.csv',header = ["label","w2v","PCP","PSNP","DBPF"],index=False)

@@ -22,16 +22,15 @@ from gensim.models import word2vec
 #No:9--PCP      length*(input_length-window_size+1)*4   CP
 #No:10--DBPF      length*(input_length-2+1)*5
 
-#************—————————使用方式—————————*************
+#************—————————How to use—————————*************
 #--1--*************NCPA(sequences)************************************
 #--2--*************PSNP(trainPos,trainNeg,testPos,testNeg,k=1)********
 #--3--*************Binary(sequences)**********************************
 #--4--*************emb_seqs(sequences)********************************
 ######################################################################
 
-#NCPA编码
-#核苷酸化学性质，返回的shape为batch_Size*input_length*4
-#化学性质+核苷酸频率编码
+#NCPA
+#shape: batch_Size*input_length*4
 def calculate(sequence):
     X = []
     dictNum = {'A' : 0, 'T' : 0, 'C' : 0, 'G' : 0, 'N': 0};
@@ -57,17 +56,17 @@ def NCPA(sequences):
         ncp_feature.append(ncpa)
     return np.array(ncp_feature)
 
-#PSNP编码
+#PSNP
 def CalculateMatrix(data, order, k):
     if k == 1:        
-        matrix = np.zeros((len(data[0]), 4))    #定义单个序列长度*4大小的“0”矩阵
-        for i in range(len(data[0])): # position，对第0条序列遍历
-            for j in range(len(data)):  #对每个序列进行遍历
-                matrix[i][order[data[j][i:i+1]]] += 1  #矩阵对应位置的对应字母对应编号+1，相当于记录了数据集中，这个位置的这个字母的数量有多少个，这个位置是第一维度，这个字母是第二维度     
+        matrix = np.zeros((len(data[0]), 4))
+        for i in range(len(data[0])): 
+            for j in range(len(data)):  
+                matrix[i][order[data[j][i:i+1]]] += 1     
     return matrix
 
 def PSNP(trainPos,trainNeg,testPos,testNeg,k=1):
-    #转String
+    #String
     train_positive = []
     for pos in trainPos:
         train_positive.append(str(pos))

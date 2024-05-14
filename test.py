@@ -18,7 +18,7 @@ from torch.autograd import Variable
 from sklearn.model_selection import KFold
 import torch.nn.functional as F
 import os
-import Model
+import Attention_model as Model
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 import csv
@@ -150,22 +150,22 @@ if __name__ == '__main__':
             os.makedirs(Output_path+'KFold_'+str(i))
         
         #test the model for w2v feature
-        model_dir = "Model/"+type_name[typei]+"_"+cell_name[celli]+"/emb/KFold_" + str(i) + "/"
+        model_dir = "Model/"+type_name+"_"+cell_name+"/emb/KFold_" + str(i) + "/"
         model = Model.ModelB_MultiSelf_Pro(testData_emb.shape[1],testData_emb.shape[2])
         y_pred_emb,y_true = Model.independResult(testData_emb,testLabel,device,model_dir,64,0.5)
         
         #test the model for PCP feature
-        model_dir = "Model/"+type_name[typei]+"_"+cell_name[celli]+"/PCP/KFold_" + str(i) + "/"
+        model_dir = "Model/"+type_name+"_"+cell_name+"/PCP/KFold_" + str(i) + "/"
         model = Model.ModelBS_Pro(testData_PCP.shape[1],testData_PCP.shape[2])
         y_pred_PCP,y_true = Model.independResult(testData_PCP,testLabel,device,model_dir,64,0.5)
 
         #test the model for PSNP feature
-        model_dir = "Model/"+type_name[typei]+"_"+cell_name[celli]+"/PSNP/KFold_" + str(i) + "/"
+        model_dir = "Model/"+type_name+"_"+cell_name+"/PSNP/KFold_" + str(i) + "/"
         model = Model.ModelB_MultiSelf_Pro(testData_PSNP.shape[1],testData_PSNP.shape[2])
         y_pred_PSNP,y_true = Model.independResult(testData_PSNP,testLabel,device,model_dir,64,0.5)
 
         #test the model for DBPF feature
-        model_dir = "Model/"+type_name[typei]+"_"+cell_name[celli]+"/DBPF/KFold_" + str(i) + "/"
+        model_dir = "Model/"+type_name+"_"+cell_name+"/DBPF/KFold_" + str(i) + "/"
         model = Model.ModelB_Bah_Pro(testData_DBPF.shape[1],testData_DBPF.shape[2])
         y_pred_DBPF,y_true = Model.independResult(testData_DBPF,testLabel,device,model_dir,64,0.5)
 
