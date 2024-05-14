@@ -24,6 +24,31 @@ from matplotlib.ticker import LinearLocator
 import csv
 # %matplotlib inline
 
+def read_fasta(fasta_file_path):
+    """
+    Read sequences and names from a FASTA file.
+
+    Parameters:
+    - fasta_file_path (str): Path to the FASTA file.
+
+    Returns:
+    - sequences (list): List of RNA sequences.
+    - names (list): List of names corresponding to RNA sequences.
+    """
+    sequences = []
+    names = []
+
+    with open(fasta_file_path, 'r') as fasta_file:
+        for line in fasta_file:
+            if line.startswith('>'):
+                name = line.strip()[1:]
+                names.append(name)
+                sequence = ''
+            else:
+                sequence += line.strip()
+                sequences.append(sequence)
+    return sequences, names
+
 #change the length of seq from 1001 to 41.
 def long_short(data):
     seq_list = []
@@ -74,29 +99,48 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = str(cuda_device)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+    train_seq,name = read_fasta("data/"+str(type_name)+"+"+str(cell_name)+"/train.fasta")
 
-    trainPosSeq_file = "data/"+type_name+"_"+cell_name+"/Pos_"+cell_name+"_train_"+type_name[typei]+"_seq.csv"
-    trainNegSeq_file = "data/"+type_name+"_"+cell_name+"/Neg_"+cell_name+"_train_"+type_name[typei]+"_seq.csv"
-    testPosSeq_file = "data/"+type_name+"_"+cell_name+"/Pos_"+cell_name+"_test_"+type_name[typei]+"_seq.csv"
-    testNegSeq_file = "data/"+type_name+"_"+cell_name+"/Neg_"+cell_name+"_test_"+type_name[typei]+"_seq.csv"
-    
-    #get the file information
-    trainPos_seq = pd.read_csv(trainPosSeq_file,header=None)
-    trainNeg_seq = pd.read_csv(trainNegSeq_file,header=None)
-    testPos_seq = pd.read_csv(testPosSeq_file,header=None)
-    testNeg_seq = pd.read_csv(testNegSeq_file,header=None)
+    trainPos_seq = []
+    trainNeg_seq = []
+    for i in range(len(name)):
+        if name[i][0]=='P':
+            trainPos_seq.append(train_seq[i])
+        else:
+            trainNeg_seq.append(train_seq[i])
 
-    #change the length to 41
-    trainPos_seq = long_short(trainPos_seq)
-    trainNeg_seq = long_short(trainNeg_seq)
-    testPos_seq = long_short(testPos_seq)
-    testNeg_seq = long_short(testNeg_seq)
+    test_seq,name = read_fasta("data/"+str(type_name)+"+"+str(cell_name)+"/test.fasta")
+
+    testPos_seq = []
+    testNeg_seq = []
+    for i in range(len(name)):
+        if name[i][0]=='P':
+            testPos_seq.append(test_seq[i])
+        else:
+            testNeg_seq.append(test_seq[i])
+
+    # trainPosSeq_file = "data/"+type_name+"_"+cell_name+"/Pos_"+cell_name+"_train_"+type_name[typei]+"_seq.csv"
+    # trainNegSeq_file = "data/"+type_name+"_"+cell_name+"/Neg_"+cell_name+"_train_"+type_name[typei]+"_seq.csv"
+    # testPosSeq_file = "data/"+type_name+"_"+cell_name+"/Pos_"+cell_name+"_test_"+type_name[typei]+"_seq.csv"
+    # testNegSeq_file = "data/"+type_name+"_"+cell_name+"/Neg_"+cell_name+"_test_"+type_name[typei]+"_seq.csv"
     
-    #delete the seq which included 'N' base
-    trainPos_seq = check_N(trainPos_seq)
-    trainNeg_seq = check_N(trainNeg_seq)
-    testPos_seq = check_N(testPos_seq)
-    testNeg_seq = check_N(testNeg_seq)
+    # #get the file information
+    # trainPos_seq = pd.read_csv(trainPosSeq_file,header=None)
+    # trainNeg_seq = pd.read_csv(trainNegSeq_file,header=None)
+    # testPos_seq = pd.read_csv(testPosSeq_file,header=None)
+    # testNeg_seq = pd.read_csv(testNegSeq_file,header=None)
+
+    # #change the length to 41
+    # trainPos_seq = long_short(trainPos_seq)
+    # trainNeg_seq = long_short(trainNeg_seq)
+    # testPos_seq = long_short(testPos_seq)
+    # testNeg_seq = long_short(testNeg_seq)
+    
+    # #delete the seq which included 'N' base
+    # trainPos_seq = check_N(trainPos_seq)
+    # trainNeg_seq = check_N(trainNeg_seq)
+    # testPos_seq = check_N(testPos_seq)
+    # testNeg_seq = check_N(testNeg_seq)
 
     #Shuffle the seq
     trainNeg_seq = shuffle(trainNeg_seq, random_state=1)
