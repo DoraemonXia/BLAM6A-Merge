@@ -27,9 +27,9 @@ To make sure the pyg packages are installed correctely, we directly install them
 conda create --name BLAM6A python=3.8
 conda activate BLAM6A
 
-conda install pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 -c pytorch
+conda install pytorch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 pytorch-cuda=11.8 -c pytorch -c nvidia
 pip install --upgrade pip
-pip install pandas numpy matplotlib seaborn sklearn
+pip install pandas numpy matplotlib seaborn sciki-learn
 ```
 
 ## Data
