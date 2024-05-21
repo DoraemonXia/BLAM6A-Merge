@@ -4,7 +4,7 @@ BLAM6A-Merge: Leveraging Attention Mechanisms and Feature Fusion Strategies to I
 
 <div align="center">
 
-[![](https://img.shields.io/badge/github-green?style=plastic&logo=github)](https://github.com/1290901435/BLAM6A-Merge)
+[![](https://img.shields.io/badge/github-green?style=plastic&logo=github)](https://github.com/DoraemonXia/BLAM6A-Merge/blob/main/imgs/Figure_1.jpg)
 <!-- [![](https://img.shields.io/badge/dataset-zenodo-orange?style=plastic&logo=zenodo)](https://zenodo.org/records/10021618) -->
 </div>
 
