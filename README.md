@@ -4,14 +4,14 @@ BLAM6A-Merge: Leveraging Attention Mechanisms and Feature Fusion Strategies to I
 
 <div align="center">
 
-[![](https://img.shields.io/badge/github-green?style=plastic&logo=github)](https://github.com/DoraemonXia/BLAM6A-Merge/blob/main/imgs/Figure_1.jpg)
+[![](https://img.shields.io/badge/github-green?style=plastic&logo=github)](https://github.com/DoraemonXia/BLAM6A-Merge)
 <!-- [![](https://img.shields.io/badge/dataset-zenodo-orange?style=plastic&logo=zenodo)](https://zenodo.org/records/10021618) -->
 </div>
 
 ## Overview
 This repository contains the source code for paper "BLAM6A-Merge: Leveraging Attention Mechanisms and Feature Fusion Strategies to Improve the Identification of RNA N6-methyladenosine Sites". If you have questions, or you have problem using my tools on test other dataset， don't hesitate to open an issue or ask me via <121106022704@njust.edu.cn>. We are happy to hear from you!
 
-![](https://github.com/1290901435/BLAM6A-Merge/imgs/Figure_1.jpg)
+![](https://github.com/DoraemonXia/BLAM6A-Merge/imgs/Figure_1.jpg)
 
 <!-- ## News
 **Oct 10 2023**: The trained FABind model and processed dataset are released!
