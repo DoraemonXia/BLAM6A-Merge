@@ -33,9 +33,10 @@ pip install pandas numpy matplotlib seaborn sciki-learn
 ```
 
 ## Data
-The origin dataset we used can be found from **zenado.
+<!--The origin dataset we used can be found from **zenado.-->
+You can generate the sequences for training and testing from the R script in data_prepare/ folder.
 
-We also provide a simple demo dataset in data folder.
+We also provide a simple demo file in data folder.
 
 You can also generate the sequence yourself from the R script.
 
