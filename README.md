@@ -52,7 +52,7 @@ cd data
 #for example
 cd FullTranscript+A549
 makeblastdb -in train.fasta -dbtype nucl -out train -parse_seqids
-blastn -db -query query.fa -outfmt 6 -out test.csv
+blastn -db -query test.fasta -outfmt 6 -out test.csv
 ```
 
 ## Training process
