@@ -1,5 +1,7 @@
 import random
 import numpy as np
+
+#shuffle the data and label synchronously
 def shuffleData(X, y):
     X = np.array(X)
     y = np.array(y)
@@ -9,4 +11,4 @@ def shuffleData(X, y):
     y = y[index]
     X = X.tolist()
     y = y.tolist()
-    return X, y;
+    return X, y
