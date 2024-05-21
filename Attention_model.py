@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 from torch import nn
 import re
-from sklearn.utils import shuffle
+#from sklearn.utils import shuffle
 from utils import metricsCal
 from torch.utils.data import DataLoader,TensorDataset
 from sklearn.svm import SVC
@@ -11,7 +11,7 @@ import math
 import sys
 import copy
 import pickle
-from torch.autograd import Variable
+#from torch.autograd import Variable
 from sklearn.model_selection import KFold
 import torch.nn.functional as F
 import os
@@ -187,7 +187,7 @@ class ModelBS(nn.Module):
         out = self.bm1(out)
         #out = out.view(out.shape[0],-1)
         return out,x2
-    
+
 class ModelBS_Pro(nn.Module):
     def __init__(self, dim1, dim2, dropout=0.1):
         super(ModelBS_Pro, self).__init__()
