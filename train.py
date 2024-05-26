@@ -22,6 +22,7 @@ import Attention_model as Model
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 import csv
+import argparse
 # %matplotlib inline
 
 def read_fasta(fasta_file_path):
@@ -90,10 +91,10 @@ if __name__ == '__main__':
     #feature_name = ["binary","DNC","NCPA","emb","PSNP","ENAC","EIIP","PseDNC","PCP","DBPF"]
 
     # Hyper Parameters
-    max_epochs = max_epochs
-    max_patience = max_patience
-    batch_size = batch_size
-    cuda_device = arg.cuda_device
+    max_epochs = args.max_epochs
+    max_patience = args.max_patience
+    batch_size = args.batch_size
+    cuda_device = args.cuda_device
 
     #choose the device
     os.environ['CUDA_VISIBLE_DEVICES'] = str(cuda_device)
@@ -245,7 +246,7 @@ if __name__ == '__main__':
         model = Model.ModelB_MultiSelf_Pro(X_train_emb.shape[1],X_test_emb.shape[2])
         
         for j in range(max_epochs):
-            runningLoss,th = Model.train(model,X_train_emb,X_test_emb,i,device,model_dir,batch_size)
+            runningLoss,th = Model.train(model,X_train_emb,Y_train_emb,i,device,model_dir,batch_size)
             acc, mcc, auc=Model.test(X_test_emb,Y_test_emb,best_auc,device,model_dir,batch_size,th)
 
             if auc > best_auc:
@@ -267,7 +268,7 @@ if __name__ == '__main__':
         model = Model.ModelBS_Pro(X_train_PCP.shape[1],X_test_PCP.shape[2])
         
         for j in range(max_epochs):
-            runningLoss,th = Model.train(model,X_train_PCP,X_test_PCP,i,device,model_dir,batch_size)
+            runningLoss,th = Model.train(model,X_train_PCP,Y_train_PCP,i,device,model_dir,batch_size)
             acc, mcc, auc=Model.test(X_test_PCP,Y_test_PCP,best_auc,device,model_dir,batch_size,th)
 
             if auc > best_auc:
@@ -277,7 +278,7 @@ if __name__ == '__main__':
                 patience+=1
             if patience==max_patience:
                 break
-        y_pred_PCP, y_true = Model.independResult( X_test_DBPF,Y_test_PCP,device,model_dir,batch_size,th )
+        y_pred_PCP, y_true = Model.independResult( X_test_PCP,Y_test_PCP,device,model_dir,batch_size,th )
         print("The model for PCP feature had trained over!")
 
         #train the model for PSNP feature
@@ -288,7 +289,7 @@ if __name__ == '__main__':
         model = Model.ModelB_MultiSelf_Pro(X_train_PSNP.shape[1],X_test_PSNP.shape[2])
         
         for j in range(max_epochs):
-            runningLoss,th = Model.train(model,X_train_PSNP,X_test_PSNP,i,device,model_dir,batch_size)
+            runningLoss,th = Model.train(model,X_train_PSNP,Y_train_PSNP,i,device,model_dir,batch_size)
             acc, mcc, auc=Model.test(X_test_PSNP,Y_test_PSNP,best_auc,device,model_dir,batch_size,th)
             print()
 
@@ -310,7 +311,7 @@ if __name__ == '__main__':
         model = Model.ModelB_Bah_Pro(X_train_DBPF.shape[1],X_test_DBPF.shape[2])
         
         for j in range(max_epochs):
-            runningLoss,th = Model.train(model,X_train_DBPF,X_test_DBPF,i,device,model_dir,batch_size)
+            runningLoss,th = Model.train(model,X_train_DBPF,Y_train_DBPF,i,device,model_dir,batch_size)
             acc, mcc, auc=Model.test(X_test_DBPF,Y_test_DBPF,best_auc,device,model_dir,batch_size,th)
             print()
 
@@ -329,8 +330,10 @@ if __name__ == '__main__':
             os.makedirs(Output_path+'KFold_'+str(i))
 
         #this will generate the seq for blastn validation.
-        Blastn_seq = np.append( trainNeg_Seq[test_index],np.repeat( trainPos_Seq,10)[int(0.8*len(trainPos_Seq)):],axis=0 )
-        valid_label = np.append( np.ones( len(trainPos_Seq)),np.zeros(len(testPos_Seq) ),axis=0)
+        trainNeg_seq = np.array(trainNeg_seq)
+        Blastn_seq = np.append( np.repeat( trainPos_seq[int(0.8*len(trainPos_seq)):],10),trainNeg_seq[test_index],axis=0 )
+        valid_label = np.append( np.ones( len(np.repeat( trainPos_seq[int(0.8*len(trainPos_seq)):],10))), np.zeros(len(trainNeg_seq[test_index]) ),axis=0)
+        
         Blastn_seq,valid_label = shuffle( Blastn_seq,valid_label,random_state=42 )
         df = pd.DataFrame( np.vstack((Blastn_seq,valid_label)).T)
         df.to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/blastn_valid_seq.csv',header = ["seq","label"],index=False)
