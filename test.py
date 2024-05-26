@@ -65,6 +65,9 @@ def check_N(data1):
             seq_list.append(data1[i])
     return np.array(seq_list)
 
+def str2bool(str):
+	return True if str.lower() == 'true' else False
+
 if __name__ == '__main__':
     
     device = torch.device("cuda:5" if torch.cuda.is_available() else "cpu")
@@ -74,13 +77,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Your script description')
 
 	#Add the parameters
-    parser.add_argument('--type_name', type=str, required=True, help='Path to the positive training data')
-    parser.add_argument('--cell_name', type=str, required=True, help='Path to the negative training data')
-    parser.add_argument('--if_blastn', type=str, required=True, help='Path to the negative training data')
+    parser.add_argument('--type_name', type=str, required=True, help='Path to the type data')
+    parser.add_argument('--cell_name', type=str, required=True, help='Path to the cell data')
+    parser.add_argument('--if_blastn', type=str2bool, nargs='?', const=True, default=True, help='Enable or disable BLASTN')
     args = parser.parse_args()
 
     type_name = args.type_name
     cell_name = args.cell_name
+    if_blastn = args.if_blastn
 
     #type_name = ["FullTranscript","matureRNA"]
     #cell_name = ["A549","CD8T","Hek293_abacm","Hek293_sysy","HeLa","MOLM13"]
@@ -214,7 +218,7 @@ if __name__ == '__main__':
         model = Model.ModelB_Bah_Pro(testData_DBPF.shape[1],testData_DBPF.shape[2])
         y_pred_DBPF,y_true = Model.independResult(testData_DBPF,testLabel,device,model_dir,64,0.5)
 
-        if args.is_blastn:
+        if args.if_blastn:
             # If you don't do Blastn, you can use the data once i get from Blastn.
             blastn_res = list( pd.read_csv('Blastn/'+type_name+'_'+cell_name+'_result.csv',header=None,index_col=0).iloc[:,0])
             
@@ -230,18 +234,21 @@ if __name__ == '__main__':
         print('analysis the results.')
 
         #Get the validation results.
-        valid_results = pd.read_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/valid_results.csv',header=True)
-        blastn_res = list( pd.read_csv('Result/'+type_name+'_'+cell_name+'/blastn_valid_results.csv',header=None,index_col=0).iloc[:,0])
+        valid_results = pd.read_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/valid_results.csv',header=None)
+        if args.if_blastn:
+            blastn_res = list( pd.read_csv('Result/'+type_name+'_'+cell_name+'/blastn_valid_results.csv',header=None,index_col=0).iloc[:,0])
         stack_train = np.array( valid_results.iloc[:,1:] )
         stack_label = np.array( valid_results.iloc[:,0] )
 
         #This is the final Results.
-        new_pred, TN, FN, FP, TP, Sen, Spe, Acc, mcc, AUC = Model.analysis_results( np.array(df.iloc[1:,:]),y_true, stack_train, stack_label, strategy="stack")
+        new_pred, TN, FN, FP, TP, Sen, Spe, Acc, mcc, AUC = Model.analysis_results( np.array(df.iloc[:,1:]),y_true, stack_train, stack_label, strategy="stack")
         print(type_name," ",cell_name," :")
-        pd.DataFrame(np.vstack(new_pred,y_true).T).to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/final_results.csv',columns=["pred","label"], header=True,index=False)
+        df = pd.DataFrame(np.vstack((new_pred,y_true)).T)
+        df.columns=["pred","label"]
+        df.to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/final_results.csv', header=True,index=False)
 
-        print('Accuracy on test set: %d' %Acc)
-        print('Sensitivity on test set: %d' %Sen)
-        print('Speciality on test set: %d' %Spe)
+        print('Accuracy on test set: ', Acc)
+        print('Sensitivity on test set: ', Sen)
+        print('Speciality on test set: ', Spe)
         print('MCC on test set: %.3f' %mcc)
         print('auc on test set: %.3f' %AUC)
