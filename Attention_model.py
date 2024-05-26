@@ -54,7 +54,8 @@ class PositionalEncoding(nn.Module):
     def forward(self, emb, step=None):
         emb = emb * math.sqrt(self.dim2)
         if step is None:
-            emb = torch.tensor(emb) + self.pe[:,:emb.shape[1]]
+            #emb = torch.tensor(emb) + self.pe[:,:emb.shape[1]]
+            emb = emb.clone().detach().requires_grad_(True) + self.pe[:,:emb.shape[1]]
         else:
             emb = emb + self.pe[step]
         #emb = self.drop_out(emb)
@@ -97,8 +98,10 @@ class MultiSelfAttention(nn.Module):
             
             if i != 0:
                 out_one,attn_one= self.attn_modules[i](query,key,value)
-                out = torch.add(out,torch.tensor(out_one))
-                attn = torch.add(attn,torch.tensor(attn_one))
+                # out = torch.add(out,torch.tensor(out_one))
+                # attn = torch.add(attn,torch.tensor(attn_one))
+                out = torch.add(out,out_one.clone().detach().requires_grad_(True))
+                attn = torch.add(attn,attn_one.clone().detach().requires_grad_(True))
             else:
                 out,attn = self.attn_modules[i](query,key,value)
 
