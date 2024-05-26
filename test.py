@@ -22,6 +22,7 @@ import Attention_model as Model
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 import csv
+import argparse
 # %matplotlib inline
 
 def read_fasta(fasta_file_path):
@@ -176,10 +177,10 @@ if __name__ == '__main__':
     testPos_PCP = testPos_PCP.reshape(testPos_PCP.shape[0],1,testPos_PCP.shape[1])
     testNeg_PCP = testNeg_PCP.reshape(testNeg_PCP.shape[0],1,testNeg_PCP.shape[1])
 
-    testData_emb = np.append(np.ones(len(testPos_emb)),np.zeros(len(testNeg_emb)),axis = 0)
-    testData_PSNP = np.append(np.ones(len(testPos_PSNP)),np.zeros(len(testNeg_PSNP)),axis = 0)
-    testData_DBPF = np.append(np.ones(len(testPos_DBPF)),np.zeros(len(testNeg_DBPF)),axis = 0)
-    testData_PCP = np.append(np.ones(len(testPos_PCP)),np.zeros(len(testNeg_PCP)),axis = 0)
+    testData_emb = np.append(testPos_emb,testNeg_emb,axis = 0)
+    testData_PSNP = np.append(testPos_PSNP,testNeg_PSNP,axis = 0)
+    testData_DBPF = np.append(testPos_DBPF,testNeg_DBPF,axis = 0)
+    testData_PCP = np.append(testPos_PCP,testNeg_PCP,axis = 0)
 
     testLabel = np.append(np.ones(len(testPos_PCP)),np.zeros(len(testNeg_PCP)),axis = 0)
 
