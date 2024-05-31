@@ -60,7 +60,7 @@ blastn -db train -query test.fasta -outfmt 6 -out test.out
 This File has included the process of extracting features, network training.
 
 ```shell
-# type_name = ["FullTranscript", "maturemRNA"]
+# type_name = ["FullTranscript", "matureRNA"]
 # cell_name = ["A549","CD8T","Hek293_abacm","Hek293_sysy","HeLa","MOLM13"]
 # for example
 python train.py --type_name FullTranscript --cell_name A549
