@@ -236,8 +236,8 @@ if __name__ == '__main__':
         #Get the validation results.
         valid_results = pd.read_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/valid_results.csv',header=None)
         if args.if_blastn:
-            blastn_res = list( pd.read_csv('Result/'+type_name+'_'+cell_name+'/blastn_valid_results.csv',header=None,index_col=0).iloc[:,0])
-        stack_train = np.array( valid_results.iloc[:,1:] )
+            blastn_res = list( pd.read_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/blastn_valid_results.csv').iloc[:,0])
+        stack_train = np.array( np.vstack((valid_results.iloc[:,1:],blastn_res )).T )
         stack_label = np.array( valid_results.iloc[:,0] )
 
         #This is the final Results.
