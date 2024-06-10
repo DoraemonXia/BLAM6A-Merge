@@ -97,7 +97,7 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    train_seq,name = read_fasta("data/"+str(type_name)+"+"+str(cell_name)+"/train.fasta")
+    train_seq,name = read_fasta("data/"+str(type_name)+"+"+str(cell_name)+"/train.fa")
 
     trainPos_seq = []
     trainNeg_seq = []
@@ -107,7 +107,7 @@ if __name__ == '__main__':
         else:
             trainNeg_seq.append(train_seq[i])
 
-    test_seq,name = read_fasta("data/"+str(type_name)+"+"+str(cell_name)+"/test.fasta")
+    test_seq,name = read_fasta("data/"+str(type_name)+"+"+str(cell_name)+"/test.fa")
 
     testPos_seq = []
     testNeg_seq = []

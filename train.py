@@ -100,7 +100,7 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = str(cuda_device)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    train_seq,name = read_fasta("data/"+str(type_name)+"+"+str(cell_name)+"/train.fasta")
+    train_seq,name = read_fasta("data/"+str(type_name)+"+"+str(cell_name)+"/train.fa")
 
     trainPos_seq = []
     trainNeg_seq = []
@@ -110,7 +110,7 @@ if __name__ == '__main__':
         else:
             trainNeg_seq.append(train_seq[i])
 
-    test_seq,name = read_fasta("data/"+str(type_name)+"+"+str(cell_name)+"/test.fasta")
+    test_seq,name = read_fasta("data/"+str(type_name)+"+"+str(cell_name)+"/test.fa")
 
     testPos_seq = []
     testNeg_seq = []
@@ -331,8 +331,9 @@ if __name__ == '__main__':
 
         #this will generate the seq for blastn validation.
         trainNeg_seq = np.array(trainNeg_seq)
-        Blastn_seq = np.append( np.repeat( trainPos_seq[int(0.8*len(trainPos_seq)):],10),trainNeg_seq[test_index],axis=0 )
-        valid_label = np.append( np.ones( len(np.repeat( trainPos_seq[int(0.8*len(trainPos_seq)):],10))), np.zeros(len(trainNeg_seq[test_index]) ),axis=0)
+        trainPos_seq_10 = np.repeat( trainPos_seq,10)
+        Blastn_seq = np.append( trainPos_seq_10[int(0.8*len(trainPos_seq_10)):],trainNeg_seq[test_index],axis=0 )
+        valid_label = np.append( np.ones( len(trainPos_seq_10[int(0.8*len(trainPos_seq_10)):])), np.zeros(len(trainNeg_seq[test_index]) ),axis=0)
         
         Blastn_seq,valid_label = shuffle( Blastn_seq,valid_label,random_state=42 )
         df = pd.DataFrame( np.vstack((Blastn_seq,valid_label)).T)
