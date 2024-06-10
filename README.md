@@ -34,11 +34,9 @@ pip install pandas numpy matplotlib seaborn scikit-learn gensim
 
 ## Data
 <!--The origin dataset we used can be found from **zenado.-->
-You can generate the sequences for training and testing from the R script in data_prepare/ folder.
-
 We also provide the .fasta in data/ folder.
 
-You can also generate the sequence yourself from the R script.
+You can also generate the sequence yourself from the R script in data_prepare/ folder.
 
 ## Training process
 
