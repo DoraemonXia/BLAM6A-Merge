@@ -224,12 +224,13 @@ if __name__ == '__main__':
             
             # You can also use your's Blastn Results like this.
             # blastn_res = list( pd.read_csv('Result/'+type_name+'_'+cell_name+'/blastn_test_results.csv',header=None,index_col=0).iloc[:,0])
-            
-            df = pd.DataFrame( np.vstack((testLabel,y_pred_emb,y_pred_PCP,y_pred_PSNP,y_pred_DBPF,blastn_res)).T)
-            df.to_csv('Result/'+type_name+'_'+cell_name+'/test_multi_results.csv',columns = ["label","w2v","PCP","PSNP","DBPF","blastn"], header=True,index=False)
+            columns = ["label","w2v","PCP","PSNP","DBPF","blastn"]
+            df = pd.DataFrame( np.vstack((testLabel,y_pred_emb,y_pred_PCP,y_pred_PSNP,y_pred_DBPF,blastn_res)).T, columns=columns )
+            df.to_csv('Result/'+type_name+'_'+cell_name+'/test_multi_results.csv', header=True,index=False)
         else:
-            df = pd.DataFrame( np.vstack((testLabel,y_pred_emb,y_pred_PCP,y_pred_PSNP,y_pred_DBPF)).T)
-            df.to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/test_multi_results.csv',columns = ["label","w2v","PCP","PSNP","DBPF"], header=True,index=False)
+            columns=["label","w2v","PCP","PSNP","DBPF"]
+            df = pd.DataFrame( np.vstack((testLabel,y_pred_emb,y_pred_PCP,y_pred_PSNP,y_pred_DBPF)).T, columns=columns)
+            df.to_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/test_multi_results.csv', header=True,index=False)
         
         print('analysis the results.')
 
@@ -237,7 +238,7 @@ if __name__ == '__main__':
         valid_results = pd.read_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/valid_results.csv',header=None)
         if args.if_blastn:
             blastn_res = list( pd.read_csv('Result/'+type_name+'_'+cell_name+'/KFold_'+str(i)+'/blastn_valid_results.csv').iloc[:,0])
-        stack_train = np.array( np.vstack((valid_results.iloc[:,1:],blastn_res )).T )
+        stack_train = np.array( np.vstack((np.array(valid_results.iloc[:,1:]).T,np.array(blastn_res).reshape(1,-1) )).T )
         stack_label = np.array( valid_results.iloc[:,0] )
 
         #This is the final Results.
