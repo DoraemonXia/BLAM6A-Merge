@@ -192,9 +192,9 @@ if __name__ == '__main__':
     #generate the data for training and validation.
         X_train_PCP_neg = trainNeg_PCP[train_index]
         X_test_PCP_neg = trainNeg_PCP[test_index]
-        trainPos_PCP = np.repeat(trainPos_PCP,10,axis=0)
-        X_train_PCP_pos = trainPos_PCP[:int(0.8*len(trainPos_PCP))]
-        X_test_PCP_pos = trainPos_PCP[int(0.8*len(trainPos_PCP)):]
+        trainPos_PCP_ = np.repeat(trainPos_PCP,10,axis=0)
+        X_train_PCP_pos = trainPos_PCP_[:int(0.8*len(trainPos_PCP_))]
+        X_test_PCP_pos = trainPos_PCP_[int(0.8*len(trainPos_PCP_)):]
         Y_train_PCP = np.append(np.ones(len(X_train_PCP_pos)),np.zeros(len(X_train_PCP_neg)),axis = 0)
         Y_test_PCP = np.append(np.ones(len(X_test_PCP_pos)),np.zeros(len(X_test_PCP_neg)),axis = 0)
         X_train_PCP = np.append(X_train_PCP_pos,X_train_PCP_neg,axis=0)
@@ -204,9 +204,9 @@ if __name__ == '__main__':
 
         X_train_emb_neg = trainNeg_emb[train_index]
         X_test_emb_neg = trainNeg_emb[test_index]
-        trainPos_emb = np.repeat(trainPos_emb,10,axis=0)
-        X_train_emb_pos = trainPos_emb[:int(0.8*len(trainPos_emb))]
-        X_test_emb_pos = trainPos_emb[int(0.8*len(trainPos_emb)):]
+        trainPos_emb_ = np.repeat(trainPos_emb,10,axis=0)
+        X_train_emb_pos = trainPos_emb_[:int(0.8*len(trainPos_emb_))]
+        X_test_emb_pos = trainPos_emb_[int(0.8*len(trainPos_emb_)):]
         Y_train_emb = np.append(np.ones(len(X_train_emb_pos)),np.zeros(len(X_train_emb_neg)),axis = 0)
         Y_test_emb = np.append(np.ones(len(X_test_emb_pos)),np.zeros(len(X_test_emb_neg)),axis = 0)
         X_train_emb = np.append(X_train_emb_pos,X_train_emb_neg,axis=0)
@@ -216,9 +216,9 @@ if __name__ == '__main__':
 
         X_train_DBPF_neg = trainNeg_DBPF[train_index]
         X_test_DBPF_neg = trainNeg_DBPF[test_index]
-        trainPos_DBPF = np.repeat(trainPos_DBPF,10,axis=0)
-        X_train_DBPF_pos = trainPos_DBPF[:int(0.8*len(trainPos_DBPF))]
-        X_test_DBPF_pos = trainPos_DBPF[int(0.8*len(trainPos_DBPF)):]
+        trainPos_DBPF_ = np.repeat(trainPos_DBPF,10,axis=0)
+        X_train_DBPF_pos = trainPos_DBPF_[:int(0.8*len(trainPos_DBPF_))]
+        X_test_DBPF_pos = trainPos_DBPF_[int(0.8*len(trainPos_DBPF_)):]
         Y_train_DBPF = np.append(np.ones(len(X_train_DBPF_pos)),np.zeros(len(X_train_DBPF_neg)),axis = 0)
         Y_test_DBPF = np.append(np.ones(len(X_test_DBPF_pos)),np.zeros(len(X_test_DBPF_neg)),axis = 0)
         X_train_DBPF = np.append(X_train_DBPF_pos,X_train_DBPF_neg,axis=0)
@@ -228,9 +228,9 @@ if __name__ == '__main__':
 
         X_train_PSNP_neg = trainNeg_PSNP[train_index]
         X_test_PSNP_neg = trainNeg_PSNP[test_index]
-        trainPos_PSNP = np.repeat(trainPos_PSNP,10,axis=0)
-        X_train_PSNP_pos = trainPos_PSNP[:int(0.8*len(trainPos_PSNP))]
-        X_test_PSNP_pos = trainPos_PSNP[int(0.8*len(trainPos_PSNP)):]
+        trainPos_PSNP_ = np.repeat(trainPos_PSNP,10,axis=0)
+        X_train_PSNP_pos = trainPos_PSNP_[:int(0.8*len(trainPos_PSNP_))]
+        X_test_PSNP_pos = trainPos_PSNP_[int(0.8*len(trainPos_PSNP_)):]
         Y_train_PSNP = np.append(np.ones(len(X_train_PSNP_pos)),np.zeros(len(X_train_PSNP_neg)),axis = 0)
         Y_test_PSNP = np.append(np.ones(len(X_test_PSNP_pos)),np.zeros(len(X_test_PSNP_neg)),axis = 0)
         X_train_PSNP = np.append(X_train_PSNP_pos,X_train_PSNP_neg,axis=0)
